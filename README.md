@@ -1,73 +1,80 @@
-# Welcome to your Lovable project
+# PhysioVision
 
-## Project info
+An AI-powered physiotherapy prescription and exercise tracking platform that helps physiotherapists create personalized treatment plans and monitor patient progress.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Features
 
-## How can I edit this code?
+- **Doctor Dashboard**: Voice-powered prescription creation with AI dictation
+- **Patient View**: Interactive exercise tracking with real-time pose detection using MediaPipe
+- **Exercise Library**: Comprehensive collection of physiotherapy exercises
+- **Progress Tracking**: Monitor patient compliance and exercise completion
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Technologies
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Vite** - Fast build tool and dev server
+- **TypeScript** - Type-safe JavaScript
+- **React** - UI library
+- **shadcn-ui** - Component library
+- **Tailwind CSS** - Utility-first CSS framework
+- **MediaPipe** - Pose detection and tracking
+- **React Hook Form** - Form management
+- **Zod** - Schema validation
 
-## How can I deploy this project?
+## Getting Started
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+### Prerequisites
 
-## Can I connect a custom domain to my Lovable project?
+- Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Yes, you can!
+### Installation
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```sh
+# Clone the repository
+git clone https://github.com/Khyati41/physiovision.git
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# Navigate to the project directory
+cd physiovision
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+The app will be available at `http://localhost:8080`
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build in development mode
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## Project Structure
+
+```
+physiovision/
+├── src/
+│   ├── components/
+│   │   ├── doctor/        # Doctor dashboard components
+│   │   ├── patient/       # Patient view components
+│   │   └── ui/            # shadcn-ui components
+│   ├── context/           # React context providers
+│   ├── hooks/             # Custom React hooks
+│   ├── lib/               # Utility functions
+│   └── pages/             # Page components
+├── public/                # Static assets
+└── ...
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is private and proprietary.
