@@ -1,4 +1,4 @@
-# PhysioVision
+# Physio Vision
 
 An AI-powered physiotherapy prescription and exercise tracking platform that helps physiotherapists create personalized treatment plans and monitor patient progress.
 

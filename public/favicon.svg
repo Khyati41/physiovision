@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <!-- Rounded square background with teal/green -->
+  <rect width="48" height="48" rx="12" fill="#0d967b"/>
+  
+  <!-- Activity icon centered and scaled up -->
+  <path d="M38 24h-4.32a3.5 3.5 0 0 0-3.36 2.55l-4.1 14.58a.44.44 0 0 1-.84 0L16.15 8.82a.44.44 0 0 0-.84 0l-4.1 14.58A3.5 3.5 0 0 1 7.85 26H10" 
+        stroke="white" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" 
+        fill="none"/>
+</svg>
