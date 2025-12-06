@@ -6,7 +6,16 @@ import { usePhysio } from '@/context/PhysioContext';
 import { Badge } from '@/components/ui/badge';
 
 export const AppointmentCalendar = ({ onNewAppointment }: { onNewAppointment: () => void }) => {
-  const { appointments, deleteAppointment, getAppointmentsByDate } = usePhysio();
+  const { appointments, deleteAppointment, getAppointmentsByDate, user } = usePhysio();
+  
+  // Filter appointments by current doctor
+  const doctorAppointments = user?.user_type === 'doctor' 
+    ? appointments.filter(apt => apt.doctor_id === user.id)
+    : [];
+  
+  const getAppointmentsByDateForDoctor = (date: string) => {
+    return doctorAppointments.filter(apt => apt.date === date);
+  };
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -41,7 +50,7 @@ export const AppointmentCalendar = ({ onNewAppointment }: { onNewAppointment: ()
 
   const getAppointmentCountForDay = (day: number) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return getAppointmentsByDate(dateStr).length;
+    return getAppointmentsByDateForDoctor(dateStr).length;
   };
 
   const isToday = (day: number) => {
@@ -56,7 +65,7 @@ export const AppointmentCalendar = ({ onNewAppointment }: { onNewAppointment: ()
     return dateStr === selectedDate;
   };
 
-  const selectedAppointments = getAppointmentsByDate(selectedDate);
+  const selectedAppointments = getAppointmentsByDateForDoctor(selectedDate);
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">

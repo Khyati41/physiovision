@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DictationInput } from './DictationInput';
 import { PrescriptionCard } from './PrescriptionCard';
 import { AppointmentCalendar } from './AppointmentCalendar';
@@ -11,15 +11,19 @@ import { FileText, Users, TrendingUp, Calendar, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const DoctorDashboard = () => {
-  const { exercises, setExercises, sendToPatient, appointments } = usePhysio();
+  const { exercises, setExercises, sendToPatient, appointments, getStats, user } = usePhysio();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [showNewAppointment, setShowNewAppointment] = useState(false);
-  const [stats] = useState({
-    activePatients: 12,
-    plansCreated: 45,
-    completionRate: 87,
-  });
+  const [, setRefreshKey] = useState(0); // Force re-render when stats should update
+  
+  // Calculate stats dynamically - will recalculate on every render
+  const stats = getStats();
+  
+  // Update when appointments change
+  useEffect(() => {
+    setRefreshKey(prev => prev + 1);
+  }, [appointments.length]);
 
   const handleGenerate = (notes: string) => {
     setIsGenerating(true);
@@ -40,11 +44,13 @@ export const DoctorDashboard = () => {
     // Send exercises to patient's plan
     sendToPatient(exercises);
     
+    // Trigger stats update
+    setRefreshKey(prev => prev + 1);
+    
     toast({
       title: 'Success!',
       description: 'Prescription sent to patient successfully.',
     });
-    setExercises([]);
     setExercises([]);
   };
 
@@ -103,7 +109,10 @@ export const DoctorDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {appointments.filter(apt => apt.date === new Date().toISOString().split('T')[0]).length}
+              {appointments.filter(apt => 
+                apt.date === new Date().toISOString().split('T')[0] && 
+                apt.doctor_id === user?.id
+              ).length}
             </div>
           </CardContent>
         </Card>

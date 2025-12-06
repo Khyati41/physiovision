@@ -56,8 +56,15 @@ interface PhysioContextType {
   exercises: Exercise[];
   setExercises: (exercises: Exercise[]) => void;
   patientPlan: Exercise[];
-  sendToPatient: (exercises: Exercise[]) => void;
+  sendToPatient: (exercises: Exercise[], patientEmail?: string) => void;
   loadPatientPlan: () => Promise<void>;
+  
+  // Stats (for doctor dashboard)
+  getStats: () => {
+    activePatients: number;
+    plansCreated: number;
+    completionRate: number;
+  };
   
   // Appointments
   appointments: Appointment[];
@@ -89,6 +96,8 @@ const STORAGE_KEYS = {
   APPOINTMENTS: 'physiovision_appointments',
   EXERCISES: 'physiovision_exercises',
   PATIENT_PLAN: 'physiovision_patient_plan',
+  PRESCRIPTIONS: 'physiovision_prescriptions', // Track prescription history
+  EXERCISE_PROGRESS: 'physiovision_exercise_progress', // Track exercise completion
 };
 
 // Helper functions for localStorage
@@ -110,37 +119,9 @@ const saveToStorage = <T,>(key: string, value: T): void => {
   }
 };
 
-// Initialize mock appointments for first-time users
+// Initialize appointments from storage
 const getInitialAppointments = (): Appointment[] => {
-  const stored = getFromStorage<Appointment[]>(STORAGE_KEYS.APPOINTMENTS, []);
-  if (stored.length === 0) {
-    // Return demo appointments only on first load
-    return [
-      {
-        id: '1',
-        doctor_id: 'demo',
-        patient_name: 'John Smith',
-        patient_email: 'john@example.com',
-        date: new Date().toISOString().split('T')[0],
-        time: '09:00',
-        duration: 60,
-        type: 'Initial Consultation',
-        notes: 'New patient - knee injury'
-      },
-      {
-        id: '2',
-        doctor_id: 'demo',
-        patient_name: 'Sarah Johnson',
-        patient_email: 'sarah@example.com',
-        date: new Date().toISOString().split('T')[0],
-        time: '14:00',
-        duration: 30,
-        type: 'Follow-up',
-        notes: 'Check progress on shoulder exercises'
-      },
-    ];
-  }
-  return stored;
+  return getFromStorage<Appointment[]>(STORAGE_KEYS.APPOINTMENTS, []);
 };
 
 export const PhysioProvider = ({ children }: { children: ReactNode }) => {
@@ -200,9 +181,24 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
     setPatientPlan([]);
   };
 
-  const sendToPatient = (exercises: Exercise[]) => {
+  const sendToPatient = (exercises: Exercise[], patientEmail?: string) => {
     setPatientPlan(exercises);
     saveToStorage(STORAGE_KEYS.PATIENT_PLAN, exercises);
+    
+    // Track prescription history
+    if (exercises.length > 0) {
+      const prescriptions = getFromStorage<Array<{ id: string; date: string; exercises: Exercise[]; patientEmail?: string }>>(
+        STORAGE_KEYS.PRESCRIPTIONS,
+        []
+      );
+      prescriptions.push({
+        id: Math.random().toString(36).substr(2, 9),
+        date: new Date().toISOString(),
+        exercises,
+        patientEmail,
+      });
+      saveToStorage(STORAGE_KEYS.PRESCRIPTIONS, prescriptions);
+    }
   };
 
   const loadPatientPlan = async () => {
@@ -232,6 +228,59 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
 
   const getAppointmentsByDate = (date: string) => {
     return appointments.filter(apt => apt.date === date);
+  };
+
+  // Calculate real stats for doctor dashboard
+  const getStats = () => {
+    if (!user || user.user_type !== 'doctor') {
+      return { activePatients: 0, plansCreated: 0, completionRate: 0 };
+    }
+
+    const patients = getPatients();
+    const prescriptions = getFromStorage<Array<{ id: string; date: string; exercises: Exercise[]; patientEmail?: string }>>(
+      STORAGE_KEYS.PRESCRIPTIONS,
+      []
+    );
+
+    // Filter appointments and prescriptions by current doctor
+    const doctorAppointments = appointments.filter(apt => apt.doctor_id === user.id);
+
+    // Active patients: unique patients with appointments or prescriptions for this doctor
+    const uniquePatientEmails = new Set<string>();
+    doctorAppointments.forEach(apt => uniquePatientEmails.add(apt.patient_email));
+    prescriptions.forEach(presc => {
+      if (presc.patientEmail) uniquePatientEmails.add(presc.patientEmail);
+    });
+    const activePatients = uniquePatientEmails.size || patients.length;
+
+    // Plans created: count of prescriptions sent
+    const plansCreated = prescriptions.length;
+
+    // Completion rate: percentage of exercises completed
+    const totalExercises = prescriptions.reduce((sum, p) => sum + p.exercises.length, 0);
+    
+    // Get completed exercises from localStorage
+    let completedCount = 0;
+    try {
+      const progressData = localStorage.getItem(STORAGE_KEYS.EXERCISE_PROGRESS);
+      if (progressData) {
+        const progress = JSON.parse(progressData);
+        const globalProgress = progress['global'] || [];
+        completedCount = globalProgress.filter((p: { completed: boolean }) => p.completed).length;
+      }
+    } catch (error) {
+      console.error('Error reading exercise progress:', error);
+    }
+    
+    const completionRate = totalExercises > 0 
+      ? Math.round((completedCount / totalExercises) * 100) 
+      : 0;
+
+    return {
+      activePatients,
+      plansCreated,
+      completionRate,
+    };
   };
 
   // Generate patient ID (format: PT-YYYY-XXX)
@@ -289,7 +338,7 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
       allergies: patientData.allergies,
     };
     
-    mockUsers[userKey] = { ...profile, password };
+    mockUsers[userKey] = { ...profile, password: patientData.password };
     saveToStorage(STORAGE_KEYS.USERS, mockUsers);
   };
 
@@ -368,7 +417,8 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
       getAppointmentsByDate,
       createPatient,
       getPatients,
-      updatePatient
+      updatePatient,
+      getStats
     }}>
       {children}
     </PhysioContext.Provider>

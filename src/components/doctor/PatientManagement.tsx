@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +45,14 @@ export const PatientManagement = () => {
   const [selectedPatient, setSelectedPatient] = useState<Profile | null>(null);
   const [patients, setPatients] = useState(getPatients());
   const [deletePatientId, setDeletePatientId] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Refresh patients list when refreshKey changes
+  useEffect(() => {
+    setPatients(getPatients());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -111,7 +119,11 @@ export const PatientManagement = () => {
         allergies: '',
       });
       setIsDialogOpen(false);
-      setPatients(getPatients()); // Refresh list
+      // Refresh immediately and after a small delay to ensure localStorage is updated
+      setPatients(getPatients());
+      setTimeout(() => {
+        setRefreshKey(prev => prev + 1);
+      }, 100);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -159,7 +171,10 @@ export const PatientManagement = () => {
 
       setIsEditDialogOpen(false);
       setSelectedPatient(null);
-      setPatients(getPatients()); // Refresh list
+      // Trigger refresh
+      setTimeout(() => {
+        setRefreshKey(prev => prev + 1);
+      }, 100);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -191,7 +206,10 @@ export const PatientManagement = () => {
           description: 'Patient account has been removed.',
         });
         
-        setPatients(getPatients()); // Refresh list
+        // Trigger refresh
+        setTimeout(() => {
+          setRefreshKey(prev => prev + 1);
+        }, 100);
       }
     } catch (error: any) {
       toast({
