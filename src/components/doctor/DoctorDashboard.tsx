@@ -7,7 +7,7 @@ import { PatientManagement } from './PatientManagement';
 import { usePhysio, Exercise } from '@/context/PhysioContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Users, TrendingUp, Calendar, UserPlus } from 'lucide-react';
+import { FileText, Users, TrendingUp, Calendar, UserPlus, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const DoctorDashboard = () => {
@@ -24,6 +24,9 @@ export const DoctorDashboard = () => {
   useEffect(() => {
     setRefreshKey(prev => prev + 1);
   }, [appointments.length]);
+  const [patientMessages, setPatientMessages] = useState<any[]>([]);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [messagesViewed, setMessagesViewed] = useState(false);
 
   const handleGenerate = (notes: string) => {
     setIsGenerating(true);
@@ -53,6 +56,38 @@ export const DoctorDashboard = () => {
     });
     setExercises([]);
   };
+
+  useEffect(() => {
+    // Clear exercises on mount to ensure they don't persist across page refreshes
+  }, [setExercises]);
+
+  useEffect(() => {
+    // Load patient messages from localStorage
+    try {
+      const raw = localStorage.getItem('physiovision_patient_messages');
+      const messagesViewed = localStorage.getItem('physiovision_messages_viewed') === 'true';
+      
+      if (!raw) {
+        setPatientMessages([]);
+        setUnreadMessageCount(0);
+        return;
+      }
+      const messages = JSON.parse(raw);
+      if (Array.isArray(messages)) {
+        // Sort by timestamp descending (newest first)
+        setPatientMessages(messages.sort((a: any, b: any) => b.timestamp - a.timestamp));
+        // Set unread count only if messages not yet viewed
+        if (!messagesViewed) {
+          setUnreadMessageCount(messages.length);
+        } else {
+          setUnreadMessageCount(0);
+        }
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load patient messages', e);
+    }
+  }, []);
 
   return (
     <div className="container py-8">
@@ -120,7 +155,7 @@ export const DoctorDashboard = () => {
 
       {/* Main Content with Tabs */}
       <Tabs defaultValue="prescriptions" className="w-full">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-6">
+        <TabsList className="grid w-full max-w-3xl grid-cols-4 mb-6">
           <TabsTrigger value="prescriptions">
             <FileText className="h-4 w-4 mr-2" />
             Prescriptions
@@ -132,6 +167,22 @@ export const DoctorDashboard = () => {
           <TabsTrigger value="patients">
             <UserPlus className="h-4 w-4 mr-2" />
             Patients
+          </TabsTrigger>
+          <TabsTrigger 
+            value="messages"
+            onClick={() => {
+              setMessagesViewed(true);
+              localStorage.setItem('physiovision_messages_viewed', 'true');
+            }}
+            className="relative"
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Messages
+            {unreadMessageCount > 0 && (
+              <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform bg-red-600 rounded-full">
+                {unreadMessageCount}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -165,6 +216,42 @@ export const DoctorDashboard = () => {
 
         <TabsContent value="patients" className="mt-0">
           <PatientManagement />
+        </TabsContent>
+
+        <TabsContent value="messages" className="mt-0">
+          <Card className="rounded-2xl border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <MessageSquare className="h-5 w-5" />
+                Patient Messages
+              </CardTitle>
+              <CardDescription>
+                Messages from your patients
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {patientMessages.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No messages yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {patientMessages.map((msg: any, idx: number) => (
+                    <div key={idx} className="rounded-lg border border-border p-4 bg-accent/20">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="text-sm font-semibold text-foreground">{msg.patientName}</div>
+                          <div className="text-xs text-muted-foreground">ID: {msg.patientId}</div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(msg.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="mt-2 text-sm text-foreground">{msg.message}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 

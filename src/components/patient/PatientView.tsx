@@ -58,6 +58,7 @@ export const PatientView = () => {
       }
     }
   }, [completedExercises, user?.id]);
+  const [messageText, setMessageText] = useState('');
 
   const handleExerciseComplete = (exerciseId: string) => {
     setCompletedExercises(prev => new Set(prev).add(exerciseId));
@@ -203,6 +204,64 @@ export const PatientView = () => {
           onComplete={handleExerciseComplete}
         />
       )}
+
+      {/* Message to Doctor Box */}
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold text-foreground mb-2">Message your doctor</h3>
+        <div className="flex gap-2">
+          <input
+            value={messageText}
+            onChange={(e) => setMessageText(e.target.value)}
+            placeholder="Send a message to your doctor..."
+            className="flex-1 rounded-xl border border-border px-4 py-2 bg-card text-foreground placeholder-muted-foreground"
+          />
+          <Button
+            onClick={() => {
+              if (messageText.trim().length === 0) return;
+
+              try {
+                const rawUser = localStorage.getItem('physiovision_current_user');
+                if (!rawUser) {
+                  // eslint-disable-next-line no-console
+                  console.error('No current user in localStorage');
+                  return;
+                }
+                const currentUser = JSON.parse(rawUser);
+                const patientId = currentUser?.id;
+                const patientName = currentUser?.full_name;
+
+                const newMessage = {
+                  patientId,
+                  patientName,
+                  message: messageText.trim(),
+                  timestamp: Date.now(),
+                };
+
+                const raw = localStorage.getItem('physiovision_patient_messages');
+                let messages: any[] = [];
+                if (raw) {
+                  try {
+                    messages = JSON.parse(raw);
+                    if (!Array.isArray(messages)) messages = [];
+                  } catch (e) {
+                    messages = [];
+                  }
+                }
+
+                messages.push(newMessage);
+                localStorage.setItem('physiovision_patient_messages', JSON.stringify(messages));
+                setMessageText('');
+              } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error('Failed to send message', e);
+              }
+            }}
+            className="rounded-xl"
+          >
+            Send
+          </Button>
+        </div>
+      </div>
 
     </div>
   );

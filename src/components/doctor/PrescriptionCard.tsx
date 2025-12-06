@@ -94,7 +94,7 @@ export const PrescriptionCard = ({ exercises, onSendToPatient }: PrescriptionCar
           <label className="block text-sm text-muted-foreground mb-1">Send to patient (email or id)</label>
           <div className="relative">
             <input
-              value={query || selectedPatient}
+              value={query || selectedPatientName || selectedPatient}
               onChange={(e) => { setQuery(e.target.value); setSelectedPatient(e.target.value); setSuggestionsVisible(true); }}
               onFocus={() => setSuggestionsVisible(true)}
               placeholder="Search patient by name, email or id"
