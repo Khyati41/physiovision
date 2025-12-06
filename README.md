@@ -116,11 +116,28 @@ physiovision/
 └── README.md                    # This file
 ```
 
+## 💾 Data Persistence
+
+All data is stored in browser **localStorage**, including:
+- ✅ User accounts (email/password)
+- ✅ Authentication state (stays logged in after refresh)
+- ✅ Appointments
+- ✅ Exercise prescriptions
+- ✅ Patient plans
+
+**Debug Utilities** (available in browser console):
+```javascript
+PhysioVision.clearAllData()     // Clear all data and restart
+PhysioVision.exportData()        // Export data as JSON
+PhysioVision.getStorageInfo()    // View storage usage
+```
+
 ## 🔒 Security Features
 
 - **Separate Authentication**: Different sign-up/sign-in for doctors and patients
 - **Role-based Access**: Separate routes for doctors and patients
 - **Protected Routes**: Authentication required for dashboards
+- **Persistent Sessions**: Stay logged in across page refreshes
 
 ## 📜 Available Scripts
 
@@ -135,11 +152,21 @@ physiovision/
 ### Authentication not working
 - Make sure you've created an account via sign-up first
 - Use the same email and password you signed up with
-- Data is stored in browser memory and will reset on page refresh
+- Data persists in localStorage - clear browser data if needed
+
+### Data not saving
+- Check if localStorage is enabled in your browser
+- Some browsers in private/incognito mode may not persist localStorage
+- Use `PhysioVision.getStorageInfo()` in console to check storage
+
+### Need to reset everything
+- Open browser console (F12)
+- Run: `PhysioVision.clearAllData()`
+- This will clear all data and reload the app
 
 ### Exercises not showing
 - Doctor needs to create and send prescription first
-- Exercises are shared between doctor and patient views via context
+- Check the Prescriptions tab to send exercises to patients
 
 ## 🤝 Contributing
 

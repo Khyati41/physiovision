@@ -10,9 +10,10 @@ import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 interface ExerciseModalProps {
   exercise: Exercise;
   onClose: () => void;
+  onComplete?: (exerciseId: string) => void;
 }
 
-export const ExerciseModal = ({ exercise, onClose }: ExerciseModalProps) => {
+export const ExerciseModal = ({ exercise, onClose, onComplete }: ExerciseModalProps) => {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const poseRef = useRef<Pose | null>(null);
@@ -97,7 +98,13 @@ export const ExerciseModal = ({ exercise, onClose }: ExerciseModalProps) => {
           setIsUp(true);
         } else if (avgKneeAngle > 160 && isUp) {
           setIsUp(false);
-          setRepCount(prev => Math.min(prev + 1, exercise.reps));
+          setRepCount(prev => {
+            const newCount = Math.min(prev + 1, exercise.reps);
+            if (newCount === exercise.reps && onComplete) {
+              onComplete(exercise.id);
+            }
+            return newCount;
+          });
         }
       }
       
@@ -130,7 +137,13 @@ export const ExerciseModal = ({ exercise, onClose }: ExerciseModalProps) => {
           setIsUp(true);
         } else if (avgArmAngle < 100 && isUp) {
           setIsUp(false);
-          setRepCount(prev => Math.min(prev + 1, exercise.reps));
+          setRepCount(prev => {
+            const newCount = Math.min(prev + 1, exercise.reps);
+            if (newCount === exercise.reps && onComplete) {
+              onComplete(exercise.id);
+            }
+            return newCount;
+          });
         }
       }
       

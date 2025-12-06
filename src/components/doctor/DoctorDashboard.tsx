@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { DictationInput } from './DictationInput';
 import { PrescriptionCard } from './PrescriptionCard';
+import { AppointmentCalendar } from './AppointmentCalendar';
+import { NewAppointmentModal } from './NewAppointmentModal';
 import { usePhysio, Exercise } from '@/context/PhysioContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Users, TrendingUp } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText, Users, TrendingUp, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const DoctorDashboard = () => {
-  const { exercises, setExercises } = usePhysio();
+  const { exercises, setExercises, sendToPatient, appointments } = usePhysio();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showNewAppointment, setShowNewAppointment] = useState(false);
   const [stats] = useState({
     activePatients: 12,
     plansCreated: 45,
@@ -32,6 +36,9 @@ export const DoctorDashboard = () => {
   };
 
   const handleSendToPatient = () => {
+    // Send exercises to patient's plan
+    sendToPatient(exercises);
+    
     toast({
       title: 'Success!',
       description: 'Prescription sent to patient successfully.',
@@ -51,7 +58,7 @@ export const DoctorDashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid gap-4 sm:grid-cols-4">
         <Card className="rounded-2xl border-border bg-card shadow-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -85,28 +92,65 @@ export const DoctorDashboard = () => {
             <div className="text-2xl font-bold text-foreground">{stats.completionRate}%</div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Main Content */}
-      <div className="grid gap-8 lg:grid-cols-2">
         <Card className="rounded-2xl border-border bg-card shadow-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Clinical Notes</CardTitle>
-            <CardDescription>
-              Dictate or type your observations to generate an AI-powered exercise plan
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Appointments Today
+            </CardTitle>
+            <Calendar className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <DictationInput onGenerate={handleGenerate} isGenerating={isGenerating} />
+            <div className="text-2xl font-bold text-foreground">
+              {appointments.filter(apt => apt.date === new Date().toISOString().split('T')[0]).length}
+            </div>
           </CardContent>
         </Card>
-
-        {exercises.length > 0 && (
-          <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-            <PrescriptionCard exercises={exercises} onSendToPatient={handleSendToPatient} />
-          </div>
-        )}
       </div>
+
+      {/* Main Content with Tabs */}
+      <Tabs defaultValue="prescriptions" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+          <TabsTrigger value="prescriptions">
+            <FileText className="h-4 w-4 mr-2" />
+            Prescriptions
+          </TabsTrigger>
+          <TabsTrigger value="appointments">
+            <Calendar className="h-4 w-4 mr-2" />
+            Appointments
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="prescriptions" className="mt-0">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <Card className="rounded-2xl border-border bg-card shadow-card">
+              <CardHeader>
+                <CardTitle className="text-foreground">Clinical Notes</CardTitle>
+                <CardDescription>
+                  Dictate or type your observations to generate an AI-powered exercise plan
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DictationInput onGenerate={handleGenerate} isGenerating={isGenerating} />
+              </CardContent>
+            </Card>
+
+            {exercises.length > 0 && (
+              <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                <PrescriptionCard exercises={exercises} onSendToPatient={handleSendToPatient} />
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="appointments" className="mt-0">
+          <AppointmentCalendar onNewAppointment={() => setShowNewAppointment(true)} />
+        </TabsContent>
+      </Tabs>
+
+      {/* New Appointment Modal */}
+      {showNewAppointment && (
+        <NewAppointmentModal onClose={() => setShowNewAppointment(false)} />
+      )}
     </div>
   );
 };

@@ -8,7 +8,13 @@ import { ExerciseModal } from './ExerciseModal';
 export const PatientView = () => {
   const { patientPlan } = usePhysio();
   const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
-  const [completedCount] = useState(0);
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
+
+  const handleExerciseComplete = (exerciseId: string) => {
+    setCompletedExercises(prev => new Set(prev).add(exerciseId));
+  };
+
+  const completedCount = completedExercises.size;
 
   return (
     <div className="container max-w-md py-6">
@@ -98,6 +104,7 @@ export const PatientView = () => {
         <ExerciseModal
           exercise={activeExercise}
           onClose={() => setActiveExercise(null)}
+          onComplete={handleExerciseComplete}
         />
       )}
     </div>
