@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Play, Calendar, Trophy } from 'lucide-react';
 import { usePhysio, Exercise } from '@/context/PhysioContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ExerciseModal } from './ExerciseModal';
 
 export const PatientView = () => {
   const { patientPlan } = usePhysio();
   const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
+  const [completedCount] = useState(0);
 
   return (
     <div className="container max-w-md py-6">
@@ -25,9 +26,11 @@ export const PatientView = () => {
       <Card className="mb-6 rounded-2xl border-border bg-gradient-to-br from-primary to-primary/80 shadow-card">
         <CardContent className="flex items-center justify-between p-5">
           <div>
-            <p className="text-sm font-medium text-primary-foreground/80">Weekly Progress</p>
-            <p className="text-3xl font-bold text-primary-foreground">3 / 5</p>
-            <p className="text-sm text-primary-foreground/70">Sessions completed</p>
+            <p className="text-sm font-medium text-primary-foreground/80">Exercise Progress</p>
+            <p className="text-3xl font-bold text-primary-foreground">
+              {completedCount} / {patientPlan.length}
+            </p>
+            <p className="text-sm text-primary-foreground/70">Exercises completed</p>
           </div>
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-foreground/20">
             <Trophy className="h-8 w-8 text-primary-foreground" />
@@ -37,7 +40,7 @@ export const PatientView = () => {
 
       {/* Today's Plan */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Today's Plan</h2>
+        <h2 className="text-lg font-semibold text-foreground">Your Exercise Plan</h2>
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />
           <span>Today</span>

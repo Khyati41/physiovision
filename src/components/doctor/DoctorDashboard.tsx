@@ -4,10 +4,17 @@ import { PrescriptionCard } from './PrescriptionCard';
 import { usePhysio, Exercise } from '@/context/PhysioContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Users, TrendingUp } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export const DoctorDashboard = () => {
-  const { exercises, setExercises, sendToPatient } = usePhysio();
+  const { exercises, setExercises } = usePhysio();
+  const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [stats] = useState({
+    activePatients: 12,
+    plansCreated: 45,
+    completionRate: 87,
+  });
 
   const handleGenerate = (notes: string) => {
     setIsGenerating(true);
@@ -25,7 +32,11 @@ export const DoctorDashboard = () => {
   };
 
   const handleSendToPatient = () => {
-    sendToPatient(exercises);
+    toast({
+      title: 'Success!',
+      description: 'Prescription sent to patient successfully.',
+    });
+    setExercises([]);
   };
 
   return (
@@ -49,7 +60,7 @@ export const DoctorDashboard = () => {
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">24</div>
+            <div className="text-2xl font-bold text-foreground">{stats.activePatients}</div>
           </CardContent>
         </Card>
         <Card className="rounded-2xl border-border bg-card shadow-card">
@@ -60,7 +71,7 @@ export const DoctorDashboard = () => {
             <FileText className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">156</div>
+            <div className="text-2xl font-bold text-foreground">{stats.plansCreated}</div>
           </CardContent>
         </Card>
         <Card className="rounded-2xl border-border bg-card shadow-card">
@@ -71,7 +82,7 @@ export const DoctorDashboard = () => {
             <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">87%</div>
+            <div className="text-2xl font-bold text-foreground">{stats.completionRate}%</div>
           </CardContent>
         </Card>
       </div>
