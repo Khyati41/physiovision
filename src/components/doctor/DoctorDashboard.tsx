@@ -10,7 +10,7 @@ import { FileText, Users, TrendingUp, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const DoctorDashboard = () => {
-  const { exercises, setExercises, sendToPatient, appointments } = usePhysio();
+  const { exercises, setExercises, messages, sendToPatient, appointments } = usePhysio();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [showNewAppointment, setShowNewAppointment] = useState(false);
@@ -43,6 +43,7 @@ export const DoctorDashboard = () => {
       title: 'Success!',
       description: 'Prescription sent to patient successfully.',
     });
+    setExercises([]);
     setExercises([]);
   };
 
@@ -134,11 +135,39 @@ export const DoctorDashboard = () => {
               </CardContent>
             </Card>
 
-            {exercises.length > 0 && (
-              <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                <PrescriptionCard exercises={exercises} onSendToPatient={handleSendToPatient} />
-              </div>
-            )}
+        <div className="space-y-4">
+              {exercises.length > 0 && (
+                <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                  <PrescriptionCard exercises={exercises} onSendToPatient={handleSendToPatient} />
+                </div>
+              )}
+
+          <Card className="rounded-2xl border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle className="text-foreground">Messages</CardTitle>
+              <CardDescription>
+                Messages from patients will appear here
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {messages.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No messages</p>
+              ) : (
+                <div className="space-y-3">
+                  {messages.map((m) => (
+                    <div key={m.id} className="rounded-md border border-border p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-foreground">{m.from === 'patient' ? 'Patient' : 'Doctor'}</div>
+                        <div className="text-xs text-muted-foreground">{new Date(m.timestamp).toLocaleString()}</div>
+                      </div>
+                      <div className="mt-1 text-sm text-foreground">{m.text}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
           </div>
         </TabsContent>
 

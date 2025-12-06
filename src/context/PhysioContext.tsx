@@ -30,7 +30,12 @@ export interface Appointment {
   time: string;
   duration: number; // in minutes
   type: string;
-  notes?: string;
+  notes?: string;}
+export interface Message {
+  id: string;
+  from: 'patient' | 'doctor';
+  text: string;
+  timestamp: number;
 }
 
 interface PhysioContextType {
@@ -58,6 +63,8 @@ interface PhysioContextType {
   addAppointment: (appointment: Omit<Appointment, 'id'>) => void;
   deleteAppointment: (id: string) => void;
   getAppointmentsByDate: (date: string) => Appointment[];
+  messages: Message[];
+  sendMessage: (from: 'patient' | 'doctor', text: string) => void;
 }
 
 const PhysioContext = createContext<PhysioContextType | undefined>(undefined);
@@ -179,6 +186,17 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
     setExercises([]);
     setPatientPlan([]);
   };
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const sendMessage = (from: 'patient' | 'doctor', text: string) => {
+    const msg: Message = {
+      id: String(Date.now()) + Math.random().toString(36).slice(2, 9),
+      from,
+      text,
+      timestamp: Date.now(),
+    };
+    setMessages(prev => [...prev, msg]);
+  };
 
   const sendToPatient = (exercises: Exercise[]) => {
     setPatientPlan(exercises);
@@ -257,7 +275,8 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
       appointments,
       addAppointment,
       deleteAppointment,
-      getAppointmentsByDate
+      getAppointmentsByDate,
+      messages, sendMessage
     }}>
       {children}
     </PhysioContext.Provider>
