@@ -19,6 +19,12 @@ export interface Profile {
   email: string;
   license_number?: string;
   date_of_birth?: string;
+  // Patient-specific medical information
+  patient_id?: string; // Auto-generated like PT-2025-042
+  concerns?: string;
+  medical_history?: string;
+  medications?: string;
+  allergies?: string;
 }
 
 export interface Appointment {
@@ -60,8 +66,18 @@ interface PhysioContextType {
   getAppointmentsByDate: (date: string) => Appointment[];
   
   // Patient Management (Doctor only)
-  createPatient: (email: string, name: string, password: string, dateOfBirth?: string) => void;
+  createPatient: (patientData: {
+    email: string;
+    name: string;
+    password: string;
+    dateOfBirth?: string;
+    concerns?: string;
+    medicalHistory?: string;
+    medications?: string;
+    allergies?: string;
+  }) => void;
   getPatients: () => Profile[];
+  updatePatient: (patientId: string, updates: Partial<Profile>) => void;
 }
 
 const PhysioContext = createContext<PhysioContextType | undefined>(undefined);
@@ -218,14 +234,42 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
     return appointments.filter(apt => apt.date === date);
   };
 
+  // Generate patient ID (format: PT-YYYY-XXX)
+  const generatePatientId = (): string => {
+    const year = new Date().getFullYear();
+    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `PT-${year}-${randomNum}`;
+  };
+
+  // Calculate age from date of birth
+  const calculateAge = (dateOfBirth: string): number => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   // Patient Management (Doctor only)
-  const createPatient = (email: string, name: string, password: string, dateOfBirth?: string) => {
+  const createPatient = (patientData: {
+    email: string;
+    name: string;
+    password: string;
+    dateOfBirth?: string;
+    concerns?: string;
+    medicalHistory?: string;
+    medications?: string;
+    allergies?: string;
+  }) => {
     const mockUsers = getFromStorage<{ [key: string]: Profile & { password: string } }>(
       STORAGE_KEYS.USERS,
       {}
     );
     
-    const userKey = `patient-${email}`;
+    const userKey = `patient-${patientData.email}`;
     
     // Check if patient already exists
     if (mockUsers[userKey]) {
@@ -235,13 +279,36 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
     const profile: Profile = {
       id: Math.random().toString(36).substr(2, 9),
       user_type: 'patient',
-      full_name: name,
-      email: email,
-      date_of_birth: dateOfBirth,
+      full_name: patientData.name,
+      email: patientData.email,
+      date_of_birth: patientData.dateOfBirth,
+      patient_id: generatePatientId(),
+      concerns: patientData.concerns,
+      medical_history: patientData.medicalHistory,
+      medications: patientData.medications,
+      allergies: patientData.allergies,
     };
     
     mockUsers[userKey] = { ...profile, password };
     saveToStorage(STORAGE_KEYS.USERS, mockUsers);
+  };
+
+  const updatePatient = (patientId: string, updates: Partial<Profile>) => {
+    const mockUsers = getFromStorage<{ [key: string]: Profile & { password: string } }>(
+      STORAGE_KEYS.USERS,
+      {}
+    );
+    
+    // Find patient by ID
+    const userKey = Object.keys(mockUsers).find(key => {
+      const user = mockUsers[key];
+      return user.id === patientId && user.user_type === 'patient';
+    });
+    
+    if (userKey) {
+      mockUsers[userKey] = { ...mockUsers[userKey], ...updates };
+      saveToStorage(STORAGE_KEYS.USERS, mockUsers);
+    }
   };
 
   const getPatients = (): Profile[] => {
@@ -300,7 +367,8 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
       deleteAppointment,
       getAppointmentsByDate,
       createPatient,
-      getPatients
+      getPatients,
+      updatePatient
     }}>
       {children}
     </PhysioContext.Provider>
