@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Play, Calendar, Trophy } from 'lucide-react';
 import { usePhysio, Exercise } from '@/context/PhysioContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ExerciseModal } from './ExerciseModal';
 
 export const PatientView = () => {
-  const { patientPlan } = usePhysio();
+  const { patientPlan, sendToPatient } = usePhysio();
   const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
 
@@ -15,6 +15,34 @@ export const PatientView = () => {
   };
 
   const completedCount = completedExercises.size;
+
+  useEffect(() => {
+    // If patientPlan already loaded, skip
+    if (patientPlan && patientPlan.length > 0) return;
+
+    try {
+      const rawUser = localStorage.getItem('physiovision_current_user');
+      if (!rawUser) return;
+      const currentUser = JSON.parse(rawUser);
+      const userId = currentUser?.id;
+      if (!userId) return;
+
+      const rawPlans = localStorage.getItem('physiovision_patient_plan');
+      if (!rawPlans) return;
+      const plans = JSON.parse(rawPlans);
+      if (!Array.isArray(plans)) return;
+
+      const entry = plans.find((p: any) => String(p.userId) === String(userId));
+      if (entry && Array.isArray(entry.plan) && entry.plan.length > 0) {
+        // Use context function to set patient plan so UI stays in sync
+        sendToPatient(entry.plan as Exercise[]);
+      }
+    } catch (e) {
+      // ignore parsing errors
+      // eslint-disable-next-line no-console
+      console.error('Failed to load patient plan from localStorage', e);
+    }
+  }, [patientPlan, sendToPatient]);
 
   return (
     <div className="container max-w-md py-6">
