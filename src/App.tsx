@@ -11,7 +11,6 @@ import Landing from "./pages/Landing";
 import DoctorSignIn from "./pages/auth/DoctorSignIn";
 import DoctorSignUp from "./pages/auth/DoctorSignUp";
 import PatientSignIn from "./pages/auth/PatientSignIn";
-import PatientSignUp from "./pages/auth/PatientSignUp";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import PatientDashboard from "./pages/PatientDashboard";
 import NotFound from "./pages/NotFound";
@@ -31,7 +30,6 @@ const App = () => (
             <Route path="/doctor/signin" element={<DoctorSignIn />} />
             <Route path="/doctor/signup" element={<DoctorSignUp />} />
             <Route path="/patient/signin" element={<PatientSignIn />} />
-            <Route path="/patient/signup" element={<PatientSignUp />} />
             
             {/* Protected Routes */}
             <Route 

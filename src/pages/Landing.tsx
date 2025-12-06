@@ -56,7 +56,7 @@ const Landing = () => {
             <CardHeader>
               <CardTitle className="text-2xl">I'm a Patient</CardTitle>
               <CardDescription className="text-base">
-                View your exercise plans and track your progress
+                View your exercise plans and track your progress. Your doctor will create your account.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -67,14 +67,9 @@ const Landing = () => {
               >
                 Sign In as Patient
               </Button>
-              <Button 
-                variant="outline" 
-                className="w-full border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white" 
-                size="lg"
-                onClick={() => navigate('/patient/signup')}
-              >
-                Sign Up as Patient
-              </Button>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                Don't have an account? Contact your doctor to create one for you.
+              </p>
             </CardContent>
           </Card>
         </div>

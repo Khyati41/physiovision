@@ -3,14 +3,15 @@ import { DictationInput } from './DictationInput';
 import { PrescriptionCard } from './PrescriptionCard';
 import { AppointmentCalendar } from './AppointmentCalendar';
 import { NewAppointmentModal } from './NewAppointmentModal';
+import { PatientManagement } from './PatientManagement';
 import { usePhysio, Exercise } from '@/context/PhysioContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Users, TrendingUp, Calendar } from 'lucide-react';
+import { FileText, Users, TrendingUp, Calendar, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const DoctorDashboard = () => {
-  const { exercises, setExercises, messages, sendToPatient, appointments } = usePhysio();
+  const { exercises, setExercises, sendToPatient, appointments } = usePhysio();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [showNewAppointment, setShowNewAppointment] = useState(false);
@@ -110,7 +111,7 @@ export const DoctorDashboard = () => {
 
       {/* Main Content with Tabs */}
       <Tabs defaultValue="prescriptions" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-6">
           <TabsTrigger value="prescriptions">
             <FileText className="h-4 w-4 mr-2" />
             Prescriptions
@@ -118,6 +119,10 @@ export const DoctorDashboard = () => {
           <TabsTrigger value="appointments">
             <Calendar className="h-4 w-4 mr-2" />
             Appointments
+          </TabsTrigger>
+          <TabsTrigger value="patients">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Patients
           </TabsTrigger>
         </TabsList>
 
@@ -141,38 +146,16 @@ export const DoctorDashboard = () => {
                   <PrescriptionCard exercises={exercises} onSendToPatient={handleSendToPatient} />
                 </div>
               )}
-
-          <Card className="rounded-2xl border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle className="text-foreground">Messages</CardTitle>
-              <CardDescription>
-                Messages from patients will appear here
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {messages.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No messages</p>
-              ) : (
-                <div className="space-y-3">
-                  {messages.map((m) => (
-                    <div key={m.id} className="rounded-md border border-border p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium text-foreground">{m.from === 'patient' ? 'Patient' : 'Doctor'}</div>
-                        <div className="text-xs text-muted-foreground">{new Date(m.timestamp).toLocaleString()}</div>
-                      </div>
-                      <div className="mt-1 text-sm text-foreground">{m.text}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
           </div>
         </TabsContent>
 
         <TabsContent value="appointments" className="mt-0">
           <AppointmentCalendar onNewAppointment={() => setShowNewAppointment(true)} />
+        </TabsContent>
+
+        <TabsContent value="patients" className="mt-0">
+          <PatientManagement />
         </TabsContent>
       </Tabs>
 

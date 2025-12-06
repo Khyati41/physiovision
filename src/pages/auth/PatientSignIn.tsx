@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Activity, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,15 @@ const PatientSignIn = () => {
     setIsLoading(true);
 
     try {
+      // Check if patient profile exists (created by doctor)
+      const mockUsers = JSON.parse(localStorage.getItem('physiovision_users') || '{}');
+      const userKey = `patient-${email}`;
+      const patientProfile = mockUsers[userKey];
+      
+      if (!patientProfile) {
+        throw new Error('No account found. Please contact your doctor to create your account.');
+      }
+      
       await signIn('patient', email, password);
       
       toast({
@@ -96,11 +105,8 @@ const PatientSignIn = () => {
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
-            <div className="mt-4 text-center text-sm">
-              Don't have an account?{' '}
-              <Link to="/patient/signup" className="text-blue-600 hover:underline font-medium">
-                Sign up as Patient
-              </Link>
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              Don't have an account? Contact your doctor to create one for you.
             </div>
           </CardContent>
         </Card>

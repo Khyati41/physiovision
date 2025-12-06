@@ -30,12 +30,7 @@ export interface Appointment {
   time: string;
   duration: number; // in minutes
   type: string;
-  notes?: string;}
-export interface Message {
-  id: string;
-  from: 'patient' | 'doctor';
-  text: string;
-  timestamp: number;
+  notes?: string;
 }
 
 interface PhysioContextType {
@@ -63,8 +58,10 @@ interface PhysioContextType {
   addAppointment: (appointment: Omit<Appointment, 'id'>) => void;
   deleteAppointment: (id: string) => void;
   getAppointmentsByDate: (date: string) => Appointment[];
-  messages: Message[];
-  sendMessage: (from: 'patient' | 'doctor', text: string) => void;
+  
+  // Patient Management (Doctor only)
+  createPatient: (email: string, name: string, password: string, dateOfBirth?: string) => void;
+  getPatients: () => Profile[];
 }
 
 const PhysioContext = createContext<PhysioContextType | undefined>(undefined);
@@ -186,17 +183,6 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
     setExercises([]);
     setPatientPlan([]);
   };
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  const sendMessage = (from: 'patient' | 'doctor', text: string) => {
-    const msg: Message = {
-      id: String(Date.now()) + Math.random().toString(36).slice(2, 9),
-      from,
-      text,
-      timestamp: Date.now(),
-    };
-    setMessages(prev => [...prev, msg]);
-  };
 
   const sendToPatient = (exercises: Exercise[]) => {
     setPatientPlan(exercises);
@@ -230,6 +216,43 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
 
   const getAppointmentsByDate = (date: string) => {
     return appointments.filter(apt => apt.date === date);
+  };
+
+  // Patient Management (Doctor only)
+  const createPatient = (email: string, name: string, password: string, dateOfBirth?: string) => {
+    const mockUsers = getFromStorage<{ [key: string]: Profile & { password: string } }>(
+      STORAGE_KEYS.USERS,
+      {}
+    );
+    
+    const userKey = `patient-${email}`;
+    
+    // Check if patient already exists
+    if (mockUsers[userKey]) {
+      throw new Error('A patient with this email already exists');
+    }
+    
+    const profile: Profile = {
+      id: Math.random().toString(36).substr(2, 9),
+      user_type: 'patient',
+      full_name: name,
+      email: email,
+      date_of_birth: dateOfBirth,
+    };
+    
+    mockUsers[userKey] = { ...profile, password };
+    saveToStorage(STORAGE_KEYS.USERS, mockUsers);
+  };
+
+  const getPatients = (): Profile[] => {
+    const mockUsers = getFromStorage<{ [key: string]: Profile & { password: string } }>(
+      STORAGE_KEYS.USERS,
+      {}
+    );
+    
+    return Object.values(mockUsers)
+      .filter(user => user.user_type === 'patient')
+      .map(({ password, ...profile }) => profile);
   };
 
   // Helper to add mock users (for sign-up) - now uses localStorage
@@ -276,7 +299,8 @@ export const PhysioProvider = ({ children }: { children: ReactNode }) => {
       addAppointment,
       deleteAppointment,
       getAppointmentsByDate,
-      messages, sendMessage
+      createPatient,
+      getPatients
     }}>
       {children}
     </PhysioContext.Provider>

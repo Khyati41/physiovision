@@ -8,8 +8,6 @@ import { ExerciseModal } from './ExerciseModal';
 export const PatientView = () => {
   const { patientPlan } = usePhysio();
   const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
-  const { sendMessage } = usePhysio();
-  const [messageText, setMessageText] = useState('');
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
 
   const handleExerciseComplete = (exerciseId: string) => {
@@ -110,28 +108,6 @@ export const PatientView = () => {
         />
       )}
 
-      {/* Message box */}
-      <div className="mt-6">
-        <h3 className="text-sm font-semibold text-foreground mb-2">Message your doctor</h3>
-        <div className="flex gap-2">
-          <input
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            placeholder="Write a message..."
-            className="flex-1 rounded-xl border border-border px-4 py-2 bg-card text-foreground"
-          />
-          <Button
-            onClick={() => {
-              if (messageText.trim().length === 0) return;
-              sendMessage('patient', messageText.trim());
-              setMessageText('');
-            }}
-            className="rounded-xl"
-          >
-            Send
-          </Button>
-        </div>
-      </div>
     </div>
   );
 };
